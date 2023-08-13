@@ -1,4 +1,4 @@
-package Type::Tiny::Eq;
+package Type::Tiny::Equ;
 use 5.008001;
 use strict;
 use warnings;
@@ -14,20 +14,19 @@ sub new {
 
     my %opts = ( @_ == 1 ) ? %{ $_[0] } : @_;
 
-    _croak "Eq type constraints cannot have a parent constraint passed to the constructor"
+    _croak "Equ type constraints cannot have a parent constraint passed to the constructor"
         if exists $opts{parent};
 
-    _croak "Eq type constraints cannot have a constraint coderef passed to the constructor"
+    _croak "Equ type constraints cannot have a constraint coderef passed to the constructor"
         if exists $opts{constraint};
 
-    _croak "Eq type constraints cannot have a inlining coderef passed to the constructor"
+    _croak "Equ type constraints cannot have a inlining coderef passed to the constructor"
         if exists $opts{inlined};
 
     _croak "Need to supply value" unless exists $opts{value};
 
-    _croak "Eq value must be defined" unless defined $opts{value};
-
-    $opts{value} = "$opts{value}"; # stringify
+    # stringify
+    $opts{value} = defined $opts{value} ? "$opts{value}" : undef;
 
     return $class->SUPER::new( %opts );
 }
@@ -36,7 +35,9 @@ sub value { $_[0]{value} }
 
 sub _build_display_name {
     my $self = shift;
-    sprintf( "Eq['%s']", $self->value );
+    defined $self->value
+        ? sprintf( "Equ['%s']", $self->value )
+        : "Equ[Undef]";
 }
 
 sub has_parent {
@@ -47,20 +48,34 @@ sub constraint { $_[0]{constraint} ||= $_[0]->_build_constraint }
 
 sub _build_constraint {
     my $self = shift;
-    return sub {
-        defined $_ && $_ eq $self->value;
-    };
+
+    if (defined $self->value) {
+        return sub {
+            defined $_ && $_ eq $self->value;
+        };
+    }
+    else {
+        return sub {
+            !defined $_;
+        };
+    }
 }
 
 sub can_be_inlined {
     !!1;
 }
-
+#
 sub inline_check {
     my $self = shift;
 
     my $value = $self->value;
-    my $code = "(defined($_[0]) && $_[0] eq '$value')";
+    my $code;
+    if (defined $value) {
+        $code = "(defined($_[0]) && $_[0] eq '$value')";
+    }
+    else {
+        $code = "!defined($_[0])";
+    }
 
     return "do { $Type::Tiny::SafePackage $code }"
         if $Type::Tiny::AvoidCallbacks; ## no critic (Variables::ProhibitPackageVars)

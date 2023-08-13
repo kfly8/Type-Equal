@@ -5,8 +5,9 @@ use warnings;
 
 our $VERSION = "0.01";
 
-use Type::Library -base, -declare => qw( Eq );
+use Type::Library -base, -declare => qw( Eq Equ );
 use Type::Tiny::Eq;
+use Type::Tiny::Equ;
 
 my $meta = __PACKAGE__->meta;
 
@@ -15,6 +16,17 @@ $meta->add_type(
         name => 'Eq',
         constraint_generator => sub {
             Type::Tiny::Eq->new(
+                value => $_[0],
+            )
+        }
+    }
+);
+
+$meta->add_type(
+    {
+        name => 'Equ',
+        constraint_generator => sub {
+            Type::Tiny::Equ->new(
                 value => $_[0],
             )
         }

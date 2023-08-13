@@ -2,13 +2,13 @@ use strict;
 use warnings;
 use Test::More;
 
-use Types::Equal qw( Eq );
+use Types::Equal qw( Eq Equ);
 
 subtest 'Eq' => sub {
     subtest 'display_name' => sub {
         my $type = Eq[ 'foo' ];
 
-        is($type->display_name, 'Eq[foo]', 'display_name is Eq[foo]');
+        is($type->display_name, "Eq['foo']", "display_name is Eq['foo']");
     };
 
     subtest 'check' => sub {
@@ -35,11 +35,61 @@ subtest 'Eq' => sub {
     };
 
     subtest 'union' => sub {
-        my $FooBar = Eq[ 'foo' ] | Eq[ 'bar' ];
+        my $FooOrBar = Eq[ 'foo' ] | Eq[ 'bar' ];
 
-        ok( $FooBar->check( 'foo' ), 'foo eq foo' );
-        ok( $FooBar->check( 'bar' ), 'bar eq bar' );
-        ok( !$FooBar->check( 'baz' ), 'baz not eq foo or bar' );
+        ok( $FooOrBar->check( 'foo' ), 'foo is valid' );
+        ok( $FooOrBar->check( 'bar' ), 'bar is valid' );
+        ok( !$FooOrBar->check( 'baz' ), 'baz is invalid' );
+    };
+};
+
+
+subtest 'Equ' => sub {
+    subtest 'display_name' => sub {
+        is( (Equ[ 'foo' ])->display_name, "Equ['foo']", "display_name is Equ['foo']");
+        is( (Equ[ undef ])->display_name, "Equ[Undef]", "display_name is Equ[Undef]");
+    };
+
+    subtest 'check' => sub {
+        subtest 'value is defined' => sub {
+            my $type = Equ[ 'foo' ];
+
+            ok( $type->check( 'foo' ), 'foo eq foo' );
+            ok( !$type->check( 'bar' ), 'bar not eq foo' );
+            ok( !$type->check( 'fo' ), 'fo is not eq foo' );
+            ok( !$type->check( 'foo ' ), '"foo " not eq foo' );
+            ok( !$type->check( ' foo' ), '" foo" not eq foo' );
+            ok( !$type->check( undef ), 'undef not eq foo' );
+            ok( !$type->check( {} ), '{} not eq foo' );
+            ok( !$type->check( [] ), '[] not eq foo' );
+        };
+
+        subtest 'value is undef' => sub {
+            my $type = Equ[ undef ];
+
+            ok( $type->check( undef ), 'undef equal undef' );
+            ok( !$type->check( 'foo' ), 'foo not equal foo' );
+            ok( !$type->check( {} ), '{} not eq foo' );
+            ok( !$type->check( [] ), '[] not eq foo' );
+        };
+    };
+
+    subtest 'value' => sub {
+        is( (Equ['foo'])->value, 'foo', 'value is foo' );
+        is( (Equ[undef])->value, undef, 'value is undef' );
+    };
+
+    subtest 'union' => sub {
+        my $FooOrBar = Equ[ 'foo' ] | Equ[ 'bar' ];
+
+        ok( $FooOrBar->check( 'foo' ), 'foo eq foo' );
+        ok( $FooOrBar->check( 'bar' ), 'bar eq bar' );
+        ok( !$FooOrBar->check( 'baz' ), 'baz not eq foo or bar' );
+
+        my $FooOrUndef = Equ[ 'foo' ] | Equ[ undef ];
+        ok( $FooOrUndef->check( 'foo' ), 'foo is valid' );
+        ok( $FooOrUndef->check( undef ), 'undef is valid' );
+        ok( !$FooOrBar->check( 'baz' ), 'baz is invalid' );
     };
 };
 
