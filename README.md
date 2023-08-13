@@ -1,15 +1,15 @@
 
 # NAME
 
-Types::Eq - It's new $module
+Types::Equal - It's new $module
 
 # SYNOPSIS
 
-    use Types::Eq;
+    use Types::Equal;
 
 # DESCRIPTION
 
-Types::Eq is ...
+Types::Equal is ...
 
 # LICENSE
 
