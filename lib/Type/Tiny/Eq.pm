@@ -68,3 +68,49 @@ sub inline_check {
 }
 
 1;
+__END__
+
+=encoding utf-8
+
+=head1 NAME
+
+Type::Tiny::Eq - type constraint for single string equality
+
+=head1 SYNOPSIS
+
+    use Type::Tiny::Eq;
+
+    my $Foo = Type::Tiny::Eq->new( value => 'foo' );
+    $Foo->check('foo'); # true
+    $Foo->check('bar'); # false
+
+    Type::Tiny::Eq->new( value => undef ); # dies
+
+=head1 DESCRIPTION
+
+This package inherits from Type::Tiny; see that for most documentation. Major differences are listed below:
+
+=head2 Attributes
+
+=over
+
+=item C<value>
+
+Allowable value string. Non-string values (e.g. objects with
+overloading) will be stringified in the constructor.
+
+=back
+
+=head1 LICENSE
+
+Copyright (C) kobaken.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=head1 AUTHOR
+
+kobaken E<lt>kfly@cpan.org<gt>
+
+=cut
+

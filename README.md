@@ -1,15 +1,87 @@
-
+[![Actions Status](https://github.com/kfly8/Type-Equal/actions/workflows/test.yml/badge.svg)](https://github.com/kfly8/Type-Equal/actions)
 # NAME
 
-Types::Equal - It's new $module
+Types::Equal - type constraints for single string equality
 
 # SYNOPSIS
 
-    use Types::Equal;
+    use Types::Equal qw( Eq Equ );
+    use Types::Standard -types;
+    use Type::Utils qw( match_on_type );
+
+    # Check single string equality
+    my $Foo = Eq['foo'];
+    $Foo->check('foo'); # true
+    $Foo->check('bar'); # false
+
+    eval { Eq[undef]; };
+    ok $@; # dies
+
+
+    # Check single string equality with undefined
+    my $Bar = Equ['bar'];
+    $Bar->check('bar'); # true
+
+    my $Undef = Equ[undef];
+    $Undef->check(undef);
+
+
+    # Can combine with other types
+    my $Baz = Eq['baz'];
+    my $ListBaz = ArrayRef[$Baz];
+    my $Type = $ListBaz | $Baz;
+
+    $Type->check(['baz']); # true
+    $Type->check('baz'); # true
+
+    # Easily use pattern matching
+    my $Publish = Eq['publish'];
+    my $Draft = Eq['draft'];
+
+    my $post = {
+        status => 'publish',
+        title => 'Hello World',
+    };
+
+    match_on_type($post->{status},
+        $Publish => sub { "Publish!" },
+        $Draft => sub { "Draft..." },
+    ) # => Publish!;
+
+
+    # Create simple Algebraic Data Types(ADT)
+    my $LoginUser = Dict[
+        _type => Eq['LoginUser'],
+        id => Int,
+        name => Str,
+    ];
+
+    my $Guest = Dict[
+        _type => Eq['Guest'],
+        name => Str,
+    ];
+
+    my $User = $LoginUser | $Guest;
+
+    my $user = { _type => 'Guest', name => 'ken' };
+    $User->assert_valid($user);
+
+    match_on_type($user,
+        $LoginUser => sub { "You are LoginUser!" },
+        $Guest => sub { "You are Guest!" },
+    ) # => 'You are Guest!';
 
 # DESCRIPTION
 
-Types::Equal is ...
+Types::Equal provides type constraints for single string equality like TypeScript's string literal types.
+
+## Eq
+
+`Eq` is function of a type constraint [Type::Tiny::Eq](https://metacpan.org/pod/Type%3A%3ATiny%3A%3AEq) which is for single string equality.
+
+## Equ
+
+`Equ` is function of a type constraint [Type::Tiny::Equ](https://metacpan.org/pod/Type%3A%3ATiny%3A%3AEqu) which is for single string equality with undefined.
 
 # LICENSE
 
@@ -20,4 +92,4 @@ it under the same terms as Perl itself.
 
 # AUTHOR
 
-kobaken <kentafly88@gmail.com>
+kobaken &lt;kfly@cpan.org&lt;gt>

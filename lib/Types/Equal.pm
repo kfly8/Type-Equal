@@ -40,15 +40,87 @@ __END__
 
 =head1 NAME
 
-Types::Equal - It's new $module
+Types::Equal - type constraints for single string equality
 
 =head1 SYNOPSIS
 
-    use Types::Equal;
+    use Types::Equal qw( Eq Equ );
+    use Types::Standard -types;
+    use Type::Utils qw( match_on_type );
+
+    # Check single string equality
+    my $Foo = Eq['foo'];
+    $Foo->check('foo'); # true
+    $Foo->check('bar'); # false
+
+    eval { Eq[undef]; };
+    ok $@; # dies
+
+
+    # Check single string equality with undefined
+    my $Bar = Equ['bar'];
+    $Bar->check('bar'); # true
+
+    my $Undef = Equ[undef];
+    $Undef->check(undef);
+
+
+    # Can combine with other types
+    my $Baz = Eq['baz'];
+    my $ListBaz = ArrayRef[$Baz];
+    my $Type = $ListBaz | $Baz;
+
+    $Type->check(['baz']); # true
+    $Type->check('baz'); # true
+
+    # Easily use pattern matching
+    my $Publish = Eq['publish'];
+    my $Draft = Eq['draft'];
+
+    my $post = {
+        status => 'publish',
+        title => 'Hello World',
+    };
+
+    match_on_type($post->{status},
+        $Publish => sub { "Publish!" },
+        $Draft => sub { "Draft..." },
+    ) # => Publish!;
+
+
+    # Create simple Algebraic Data Types(ADT)
+    my $LoginUser = Dict[
+        _type => Eq['LoginUser'],
+        id => Int,
+        name => Str,
+    ];
+
+    my $Guest = Dict[
+        _type => Eq['Guest'],
+        name => Str,
+    ];
+
+    my $User = $LoginUser | $Guest;
+
+    my $user = { _type => 'Guest', name => 'ken' };
+    $User->assert_valid($user);
+
+    match_on_type($user,
+        $LoginUser => sub { "You are LoginUser!" },
+        $Guest => sub { "You are Guest!" },
+    ) # => 'You are Guest!';
 
 =head1 DESCRIPTION
 
-Types::Equal is ...
+Types::Equal provides type constraints for single string equality like TypeScript's string literal types.
+
+=head2 Eq
+
+C<Eq> is function of a type constraint L<Type::Tiny::Eq> which is for single string equality.
+
+=head2 Equ
+
+C<Equ> is function of a type constraint L<Type::Tiny::Equ> which is for single string equality with undefined.
 
 =head1 LICENSE
 
@@ -59,7 +131,7 @@ it under the same terms as Perl itself.
 
 =head1 AUTHOR
 
-kobaken E<lt>kentafly88@gmail.comE<gt>
+kobaken E<lt>kfly@cpan.org<gt>
 
 =cut
 

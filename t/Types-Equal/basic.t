@@ -68,9 +68,19 @@ subtest 'Equ' => sub {
             my $type = Equ[ undef ];
 
             ok( $type->check( undef ), 'undef equal undef' );
+            ok( !$type->check( '' ), 'empty string not equal undef' );
             ok( !$type->check( 'foo' ), 'foo not equal foo' );
             ok( !$type->check( {} ), '{} not eq foo' );
             ok( !$type->check( [] ), '[] not eq foo' );
+        };
+
+        subtest 'value is number' => sub {
+            my $type = Equ[ 123 ];
+
+            ok( $type->check( 123 ), '123 equal 123' );
+            ok( $type->check( '123' ), '123 equal 123' );
+            ok( $type->check( 123.0 ), '123.0 not equal 123' );
+            ok( !$type->check( 'foo' ), 'foo not equal 123' );
         };
     };
 
