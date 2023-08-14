@@ -64,7 +64,7 @@ __END__
 
 =head1 NAME
 
-Types::Equal - type constraints for single string equality
+Types::Equal - type constraints for single value equality
 
 =head1 SYNOPSIS
 

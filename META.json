@@ -1,5 +1,5 @@
 {
-   "abstract" : "type constraints for single string equality",
+   "abstract" : "type constraints for single value equality",
    "author" : [
       "kobaken <kfly@cpan.org>"
    ],
