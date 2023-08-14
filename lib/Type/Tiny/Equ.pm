@@ -128,7 +128,7 @@ it under the same terms as Perl itself.
 
 =head1 AUTHOR
 
-kobaken E<lt>kfly@cpan.org<gt>
+kobaken E<lt>kfly@cpan.orgE<gt>
 
 =cut
 

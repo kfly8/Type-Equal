@@ -94,4 +94,4 @@ it under the same terms as Perl itself.
 
 # AUTHOR
 
-kobaken &lt;kfly@cpan.org&lt;gt>
+kobaken <kfly@cpan.org>
