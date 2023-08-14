@@ -5,9 +5,11 @@ use warnings;
 
 our $VERSION = "0.01";
 
-use Type::Library -base, -declare => qw( Eq Equ );
+use Type::Library -base, -declare => qw( Eq Equ NumEq NumEqu );
 use Type::Tiny::Eq;
 use Type::Tiny::Equ;
+use Type::Tiny::NumEq;
+use Type::Tiny::NumEqu;
 
 my $meta = __PACKAGE__->meta;
 
@@ -27,6 +29,28 @@ $meta->add_type(
         name => 'Equ',
         constraint_generator => sub {
             Type::Tiny::Equ->new(
+                value => $_[0],
+            )
+        }
+    }
+);
+
+$meta->add_type(
+    {
+        name => 'NumEq',
+        constraint_generator => sub {
+            Type::Tiny::NumEq->new(
+                value => $_[0],
+            )
+        }
+    }
+);
+
+$meta->add_type(
+    {
+        name => 'NumEqu',
+        constraint_generator => sub {
+            Type::Tiny::NumEqu->new(
                 value => $_[0],
             )
         }
@@ -121,6 +145,14 @@ C<Eq> is function of a type constraint L<Type::Tiny::Eq> which is for single str
 =head2 Equ
 
 C<Equ> is function of a type constraint L<Type::Tiny::Equ> which is for single string equality with undefined.
+
+=head2 NumEq
+
+C<NumEq> is function of a type constraint L<Type::Tiny::NumEq> which is for single number equality.
+
+=head2 NumEqu
+
+C<NumEqu> is function of a type constraint L<Type::Tiny::NumEqu> which is for single number equality with undefined.
 
 =head1 LICENSE
 
