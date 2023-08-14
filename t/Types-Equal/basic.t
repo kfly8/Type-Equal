@@ -2,13 +2,20 @@ use strict;
 use warnings;
 use Test::More;
 
-use Types::Equal qw( Eq Equ );
+use Types::Equal qw( Eq Equ NumEq );
 
 {
     package StringableFoo;
     use overload '""' => sub { 'foo' };
     sub new { bless {}, shift }
 }
+
+{
+    package NumberableFoo;
+    use overload '0+' => sub { 123 }, fallback => 1;
+    sub new { bless {}, shift }
+}
+
 
 subtest 'Eq' => sub {
     subtest 'display_name' => sub {
@@ -155,5 +162,59 @@ subtest 'Equ' => sub {
         ok( !$FooOrBar->check( 'baz' ), 'baz is invalid' );
     };
 };
+
+subtest 'NumEq' => sub {
+    subtest 'display_name' => sub {
+        my $type = NumEq[ 123 ];
+
+        is($type->display_name, "NumEq[123]", "display_name is NumEq[123]");
+    };
+
+    subtest 'check' => sub {
+        subtest 'value is number' => sub {
+            my $type = NumEq[ 123 ];
+
+            ok( $type->check( 123 ), 'number 123 is equal' );
+            ok( $type->check( 123.0 ), 'number 123.0 is equal' );
+
+            ok( $type->check( '123' ), "string 123 is equal" );
+            ok( $type->check( '123.0' ), 'string 123.0 is equal' );
+
+            ok( !$type->check( 124 ), 'number 124 is not equal' );
+            ok( !$type->check( 'foo' ), 'foo is not equal' );
+        };
+
+        subtest 'value is numberable object' => sub {
+            my $foo = NumberableFoo->new;
+            my $type = NumEq[ $foo ];
+
+            ok( $type->check( 123 ), 'number 123 is equal' );
+            ok( $type->check( 123.0 ), 'number 123.0 is equal' );
+
+            ok( $type->check( '123' ), "string 123 is equal" );
+            ok( $type->check( '123.0' ), 'string 123.0 is equal' );
+
+            ok( !$type->check( 124 ), 'number 124 is not equal' );
+            ok( !$type->check( 'foo' ), 'foo is not equal' );
+        };
+    };
+
+    subtest 'value' => sub {
+        is( (NumEq[ 123 ])->value, 123, 'value is 123');
+        is( (NumEq[ "123" ])->value, 123, 'value is 123');
+
+        subtest 'value cannot be undef' => sub {
+            eval { NumEq[ undef ] };
+            like( $@, qr/Eq value must be defined/ );
+        };
+
+        subtest 'value must be number' => sub {
+            eval { NumEq[ 'foo' ] };
+            like( $@, qr/NumEq value must be number/ );
+        };
+    };
+};
+
+
 
 done_testing;
