@@ -1,4 +1,4 @@
-package Type::Tiny::Equ;
+package Type::Tiny::NumEqu;
 use 5.008001;
 use strict;
 use warnings;
@@ -14,19 +14,26 @@ sub new {
 
     my %opts = ( @_ == 1 ) ? %{ $_[0] } : @_;
 
-    _croak "Equ type constraints cannot have a parent constraint passed to the constructor"
+    _croak "NumEqu type constraints cannot have a parent constraint passed to the constructor"
         if exists $opts{parent};
 
-    _croak "Equ type constraints cannot have a constraint coderef passed to the constructor"
+    _croak "NumEqu type constraints cannot have a constraint coderef passed to the constructor"
         if exists $opts{constraint};
 
-    _croak "Equ type constraints cannot have a inlining coderef passed to the constructor"
+    _croak "NumEqu type constraints cannot have a inlining coderef passed to the constructor"
         if exists $opts{inlined};
 
     _croak "Need to supply value" unless exists $opts{value};
 
-    # stringify
-    $opts{value} = defined $opts{value} ? "$opts{value}" : undef;
+    if (defined $opts{value}) {
+        use warnings FATAL => 'numeric';
+        eval {
+            $opts{value} = $opts{value} + 0; # numify
+        };
+        if ($@) {
+            _croak sprintf("`%s` is not number. NumEqu value must be number.", $opts{value});
+        }
+    }
 
     return $class->SUPER::new( %opts );
 }
@@ -35,9 +42,10 @@ sub value { $_[0]{value} }
 
 sub _build_display_name {
     my $self = shift;
+
     defined $self->value
-        ? sprintf( "Equ['%s']", $self->value )
-        : "Equ[Undef]";
+        ? sprintf( "NumEqu[%s]", $self->value )
+        : "NumEqu[Undef]";
 }
 
 sub has_parent {
@@ -51,7 +59,7 @@ sub _build_constraint {
 
     if (defined $self->value) {
         return sub {
-            defined $_ && $_ eq $self->value;
+            defined $_ && $_ == $self->value;
         };
     }
     else {
@@ -69,9 +77,10 @@ sub inline_check {
     my $self = shift;
 
     my $value = $self->value;
+
     my $code;
     if (defined $value) {
-        $code = "(defined($_[0]) && $_[0] eq '$value')";
+        $code = "(defined($_[0]) && $_[0] == $value)";
     }
     else {
         $code = "!defined($_[0])";
@@ -89,20 +98,20 @@ __END__
 
 =head1 NAME
 
-Type::Tiny::Equ - type constraint for single string equality with undefined
+Type::Tiny::NumEqu - type constraint for single number equality with undefined
 
 =head1 SYNOPSIS
 
-    use Type::Tiny::Equ;
+    use Type::Tiny::NumEqu;
 
-    my $Foo = Type::Tiny::Equ->new( value => 'foo' );
-    $Foo->check('foo'); # true
-    $Foo->check('bar'); # false
+    my $Foo = Type::Tiny::NumEqu->new( value => 123 );
+    $Foo->check(123); # true
+    $Foo->check('123'); # true
+    $Foo->check(124); # false
 
-    my $Undef = Type::Tiny::Equ->new( value => undef );
+    my $Undef = Type::Tiny::NumEqu->new( value => undef );
     $Undef->check(undef); # true
-    $Undef->check(''); # false
-    $Undef->check('foo'); # false
+    $Undef->check(123); # false
 
 =head1 DESCRIPTION
 
@@ -114,7 +123,7 @@ This package inherits from Type::Tiny; see that for most documentation. Major di
 
 =item C<value>
 
-Allowable value string or undefined value. Non-string values (e.g. objects with
+Allowable value number or undefined value. Non-number values (e.g. objects with
 overloading) will be stringified in the constructor.
 
 =back

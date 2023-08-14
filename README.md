@@ -89,6 +89,10 @@ Types::Equal provides type constraints for single string equality like TypeScrip
 
 `NumEq` is function of a type constraint [Type::Tiny::NumEq](https://metacpan.org/pod/Type%3A%3ATiny%3A%3ANumEq) which is for single number equality.
 
+## NumEqu
+
+`NumEqu` is function of a type constraint [Type::Tiny::NumEqu](https://metacpan.org/pod/Type%3A%3ATiny%3A%3ANumEqu) which is for single number equality with undefined.
+
 # LICENSE
 
 Copyright (C) kobaken.
