@@ -65,6 +65,7 @@
       }
    },
    "version" : "0.01",
+   "x_authority" : "cpan:KFLY",
    "x_contributors" : [
       "kobaken <kentafly88@gmail.com>"
    ],

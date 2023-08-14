@@ -1,75 +1,77 @@
-[![Actions Status](https://github.com/kfly8/Type-Equal/actions/workflows/test.yml/badge.svg)](https://github.com/kfly8/Type-Equal/actions)
+[![Actions Status](https://github.com/kfly8/Type-Equal/actions/workflows/test.yml/badge.svg)](https://github.com/kfly8/Type-Equal/actions) [![Coverage Status](https://img.shields.io/coveralls/kfly8/Type-Equal/main.svg?style=flat)](https://coveralls.io/r/kfly8/Type-Equal?branch=main) [![MetaCPAN Release](https://badge.fury.io/pl/Types-Equal.svg)](https://metacpan.org/release/Types-Equal)
 # NAME
 
 Types::Equal - type constraints for single string equality
 
 # SYNOPSIS
 
-    use Types::Equal qw( Eq Equ );
-    use Types::Standard -types;
-    use Type::Utils qw( match_on_type );
+```perl
+use Types::Equal qw( Eq Equ );
+use Types::Standard -types;
+use Type::Utils qw( match_on_type );
 
-    # Check single string equality
-    my $Foo = Eq['foo'];
-    $Foo->check('foo'); # true
-    $Foo->check('bar'); # false
+# Check single string equality
+my $Foo = Eq['foo'];
+$Foo->check('foo'); # true
+$Foo->check('bar'); # false
 
-    eval { Eq[undef]; };
-    ok $@; # dies
-
-
-    # Check single string equality with undefined
-    my $Bar = Equ['bar'];
-    $Bar->check('bar'); # true
-
-    my $Undef = Equ[undef];
-    $Undef->check(undef);
+eval { Eq[undef]; };
+ok $@; # dies
 
 
-    # Can combine with other types
-    my $Baz = Eq['baz'];
-    my $ListBaz = ArrayRef[$Baz];
-    my $Type = $ListBaz | $Baz;
+# Check single string equality with undefined
+my $Bar = Equ['bar'];
+$Bar->check('bar'); # true
 
-    $Type->check(['baz']); # true
-    $Type->check('baz'); # true
-
-    # Easily use pattern matching
-    my $Publish = Eq['publish'];
-    my $Draft = Eq['draft'];
-
-    my $post = {
-        status => 'publish',
-        title => 'Hello World',
-    };
-
-    match_on_type($post->{status},
-        $Publish => sub { "Publish!" },
-        $Draft => sub { "Draft..." },
-    ) # => Publish!;
+my $Undef = Equ[undef];
+$Undef->check(undef);
 
 
-    # Create simple Algebraic Data Types(ADT)
-    my $LoginUser = Dict[
-        _type => Eq['LoginUser'],
-        id => Int,
-        name => Str,
-    ];
+# Can combine with other types
+my $Baz = Eq['baz'];
+my $ListBaz = ArrayRef[$Baz];
+my $Type = $ListBaz | $Baz;
 
-    my $Guest = Dict[
-        _type => Eq['Guest'],
-        name => Str,
-    ];
+$Type->check(['baz']); # true
+$Type->check('baz'); # true
 
-    my $User = $LoginUser | $Guest;
+# Easily use pattern matching
+my $Publish = Eq['publish'];
+my $Draft = Eq['draft'];
 
-    my $user = { _type => 'Guest', name => 'ken' };
-    $User->assert_valid($user);
+my $post = {
+    status => 'publish',
+    title => 'Hello World',
+};
 
-    match_on_type($user,
-        $LoginUser => sub { "You are LoginUser!" },
-        $Guest => sub { "You are Guest!" },
-    ) # => 'You are Guest!';
+match_on_type($post->{status},
+    $Publish => sub { "Publish!" },
+    $Draft => sub { "Draft..." },
+) # => Publish!;
+
+
+# Create simple Algebraic Data Types(ADT)
+my $LoginUser = Dict[
+    _type => Eq['LoginUser'],
+    id => Int,
+    name => Str,
+];
+
+my $Guest = Dict[
+    _type => Eq['Guest'],
+    name => Str,
+];
+
+my $User = $LoginUser | $Guest;
+
+my $user = { _type => 'Guest', name => 'ken' };
+$User->assert_valid($user);
+
+match_on_type($user,
+    $LoginUser => sub { "You are LoginUser!" },
+    $Guest => sub { "You are Guest!" },
+) # => 'You are Guest!';
+```
 
 # DESCRIPTION
 
