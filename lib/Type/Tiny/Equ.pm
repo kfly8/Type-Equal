@@ -64,7 +64,7 @@ sub _build_constraint {
 sub can_be_inlined {
     !!1;
 }
-#
+
 sub inline_check {
     my $self = shift;
 

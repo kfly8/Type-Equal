@@ -2,7 +2,13 @@ use strict;
 use warnings;
 use Test::More;
 
-use Types::Equal qw( Eq Equ);
+use Types::Equal qw( Eq Equ );
+
+{
+    package StringableFoo;
+    use overload '""' => sub { 'foo' };
+    sub new { bless {}, shift }
+}
 
 subtest 'Eq' => sub {
     subtest 'display_name' => sub {
@@ -12,16 +18,45 @@ subtest 'Eq' => sub {
     };
 
     subtest 'check' => sub {
-        my $type = Eq[ 'foo' ];
 
-        ok( $type->check( 'foo' ), 'foo eq foo' );
-        ok( !$type->check( 'bar' ), 'bar not eq foo' );
-        ok( !$type->check( 'fo' ), 'fo is not eq foo' );
-        ok( !$type->check( 'foo ' ), '"foo " not eq foo' );
-        ok( !$type->check( ' foo' ), '" foo" not eq foo' );
-        ok( !$type->check( undef ), 'undef not eq foo' );
-        ok( !$type->check( {} ), '{} not eq foo' );
-        ok( !$type->check( [] ), '[] not eq foo' );
+        subtest 'value is defined' => sub {
+            my $type = Eq[ 'foo' ];
+
+            ok( $type->check( 'foo' ), '`foo` is equal' );
+            ok( !$type->check( 'bar' ), '`bar` is not equal' );
+            ok( !$type->check( 'fo' ), '`fo` is not equal' );
+            ok( !$type->check( 'foo ' ), '`foo ` is not equal' );
+            ok( !$type->check( ' foo' ), '` foo` is not equal' );
+            ok( !$type->check( undef ), 'undefined value is not equal' );
+            ok( !$type->check( {} ), '{} is not equal' );
+            ok( !$type->check( [] ), '[] is not equal' );
+            ok( !$type->check( sub {} ), 'sub {} is not equal' );
+        };
+
+        subtest 'value is number' => sub {
+            my $type = Eq[ 123 ];
+
+            ok( $type->check( 123 ), 'number 123 is equal' );
+            ok( $type->check( '123' ), "string 123 is equal" );
+            ok( $type->check( 123.0 ), 'number 123.0 is equal' );
+            ok( !$type->check( '123.0' ), 'string 123.0 is not equal' );
+            ok( !$type->check( 'foo' ), 'foo is not equal' );
+        };
+
+        subtest 'value is strinable object' => sub {
+            my $foo = StringableFoo->new;
+            my $type = Eq[ $foo ];
+
+            ok( $type->check( 'foo' ), '`foo` is equal' );
+            ok( !$type->check( 'bar' ), '`bar` is not equal' );
+            ok( !$type->check( 'fo' ), '`fo` is not equal' );
+            ok( !$type->check( 'foo ' ), '`foo ` is not equal' );
+            ok( !$type->check( ' foo' ), '` foo` is not equal' );
+            ok( !$type->check( undef ), 'undefined value is not equal' );
+            ok( !$type->check( {} ), '{} is not equal' );
+            ok( !$type->check( [] ), '[] is not equal' );
+            ok( !$type->check( sub {} ), 'sub {} is not equal' );
+        };
     };
 
     subtest 'value' => sub {
@@ -54,33 +89,51 @@ subtest 'Equ' => sub {
         subtest 'value is defined' => sub {
             my $type = Equ[ 'foo' ];
 
-            ok( $type->check( 'foo' ), 'foo eq foo' );
-            ok( !$type->check( 'bar' ), 'bar not eq foo' );
-            ok( !$type->check( 'fo' ), 'fo is not eq foo' );
-            ok( !$type->check( 'foo ' ), '"foo " not eq foo' );
-            ok( !$type->check( ' foo' ), '" foo" not eq foo' );
-            ok( !$type->check( undef ), 'undef not eq foo' );
-            ok( !$type->check( {} ), '{} not eq foo' );
-            ok( !$type->check( [] ), '[] not eq foo' );
+            ok( $type->check( 'foo' ), '`foo` is equal' );
+            ok( !$type->check( 'bar' ), '`bar` is not equal' );
+            ok( !$type->check( 'fo' ), '`fo` is not equal' );
+            ok( !$type->check( 'foo ' ), '`foo ` is not equal' );
+            ok( !$type->check( ' foo' ), '` foo` is not equal' );
+            ok( !$type->check( undef ), 'undefined value is  not equal' );
+            ok( !$type->check( {} ), '{} is not equal' );
+            ok( !$type->check( [] ), '[] is not equal' );
+            ok( !$type->check( sub {} ), 'sub {} is not equal' );
         };
 
-        subtest 'value is undef' => sub {
+        subtest 'value is undefined' => sub {
             my $type = Equ[ undef ];
 
-            ok( $type->check( undef ), 'undef equal undef' );
-            ok( !$type->check( '' ), 'empty string not equal undef' );
-            ok( !$type->check( 'foo' ), 'foo not equal foo' );
-            ok( !$type->check( {} ), '{} not eq foo' );
-            ok( !$type->check( [] ), '[] not eq foo' );
+            ok( $type->check( undef ), 'undefined value is valid' );
+            ok( !$type->check( '' ), 'empty string is not equal' );
+            ok( !$type->check( 'foo' ), '`foo` is not equal' );
+            ok( !$type->check( {} ), '{} is not equal' );
+            ok( !$type->check( [] ), '[] is not equal' );
+            ok( !$type->check( sub {} ), 'sub {} is not equal' );
         };
 
         subtest 'value is number' => sub {
             my $type = Equ[ 123 ];
 
-            ok( $type->check( 123 ), '123 equal 123' );
-            ok( $type->check( '123' ), '123 equal 123' );
-            ok( $type->check( 123.0 ), '123.0 not equal 123' );
-            ok( !$type->check( 'foo' ), 'foo not equal 123' );
+            ok( $type->check( 123 ), 'number 123 is equal' );
+            ok( $type->check( '123' ), "string 123 is equal" );
+            ok( $type->check( 123.0 ), 'number 123.0 is equal' );
+            ok( !$type->check( '123.0' ), 'string 123.0 is not equal' );
+            ok( !$type->check( 'foo' ), 'foo is not equal' );
+        };
+
+        subtest 'value is strinable object' => sub {
+            my $foo = StringableFoo->new;
+            my $type = Equ[ $foo ];
+
+            ok( $type->check( 'foo' ), '`foo` is equal' );
+            ok( !$type->check( 'bar' ), '`bar` is not equal' );
+            ok( !$type->check( 'fo' ), '`fo` is not equal' );
+            ok( !$type->check( 'foo ' ), '`foo ` is not equal' );
+            ok( !$type->check( ' foo' ), '` foo` is not equal' );
+            ok( !$type->check( undef ), 'undefined value is not equal' );
+            ok( !$type->check( {} ), '{} is not equal' );
+            ok( !$type->check( [] ), '[] is not equal' );
+            ok( !$type->check( sub {} ), 'sub {} is not equal' );
         };
     };
 
