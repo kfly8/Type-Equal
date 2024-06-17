@@ -7,6 +7,7 @@ jobs:
       matrix:
         perl:
           [
+            "5.40",
             "5.38",
             "5.36",
             "5.34",
@@ -25,10 +26,10 @@ jobs:
             "5.8",
           ]
         include:
-          - perl: 5.38
+          - perl: 5.40
             coverage_test: true
             external_test: true
-          - perl: 5.36
+          - perl: 5.38
             external_test: true
 
     name: Perl ${{ matrix.perl }}
