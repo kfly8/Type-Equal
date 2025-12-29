@@ -7,6 +7,7 @@ jobs:
       matrix:
         perl:
           [
+            "5.42",
             "5.40",
             "5.38",
             "5.36",
@@ -25,8 +26,10 @@ jobs:
             "5.10",
           ]
         include:
-          - perl: 5.40
+          - perl: 5.42
             coverage_test: true
+            external_test: true
+          - perl: 5.40
             external_test: true
           - perl: 5.38
             external_test: true
